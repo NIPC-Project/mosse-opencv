@@ -35,7 +35,10 @@ class Mosse:
 
         frame = frame / 256 - 0.5
         print(frame.shape)
-        f = frame[int(yc0) - 16 : int(yc0) + 16, int(xc0) - 16 : int(xc0) + 16] * self.window
+        f = (
+            frame[int(yc0) - 16 : int(yc0) + 16, int(xc0) - 16 : int(xc0) + 16]
+            * self.window
+        )
         F = np.fft.fft2(f)
         self.A = self.Kernel * np.conj(F)
         self.B = F * np.conj(F)
@@ -44,7 +47,10 @@ class Mosse:
         frame = frame / 256 - 0.5
 
         f = (
-            frame[int(self.yc) - 16 : int(self.yc) + 16, int(self.xc) - 16 : int(self.xc) + 16]
+            frame[
+                int(self.yc) - 16 : int(self.yc) + 16,
+                int(self.xc) - 16 : int(self.xc) + 16,
+            ]
             * self.window
         )
         F = np.fft.fft2(f)
@@ -56,10 +62,13 @@ class Mosse:
         self.xc, self.yc = (self.xc + dx, self.yc + dy)
 
         f = (
-            frame[int(self.yc) - 16 : int(self.yc) + 16, int(self.xc) - 16 : int(self.xc) + 16]
+            frame[
+                int(self.yc) - 16 : int(self.yc) + 16,
+                int(self.xc) - 16 : int(self.xc) + 16,
+            ]
             * self.window
         )
         F = np.fft.fft2(f)
         self.A = self.eta * self.Kernel * np.conj(F) + (1 - self.eta) * self.A
-        self.B = F * np.conj(F) + (1 - self.eta) * self.B
+        self.B = self.eta * F * np.conj(F) + (1 - self.eta) * self.B
         return (self.xc, self.yc)

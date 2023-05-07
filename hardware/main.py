@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-series_name = "car"  # car, cup
+series_name = "cup"  # car, cup
 
 if series_name == "car":
     frame_count = 374
