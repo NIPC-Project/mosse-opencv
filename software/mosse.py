@@ -24,7 +24,7 @@ class Mosse:
         )
 
         self.A = np.zeros((self.h, self.w), dtype=np.complex64)
-        self.B = np.zeros((self.h, self.w), dtype=np.float32)
+        self.B = np.zeros((self.h, self.w), dtype=np.float16)
 
         self.xc = 0.0
         self.yc = 0.0
@@ -42,6 +42,7 @@ class Mosse:
         F = np.fft.fft2(f)
         self.A = self.Kernel * np.conj(F)
         self.B = F * np.conj(F)
+        # print(f"{np.max(F):.0f} {np.max(self.A):.0f} {np.max(self.B):.0f}")
 
     def update(self, frame: np.ndarray) -> tuple[float, float]:
         frame = frame / 256 - 0.5
@@ -57,6 +58,7 @@ class Mosse:
         H = self.A / self.B
         G = F * H
         g = np.real(np.fft.ifft2(G))
+        # print(f"{np.max(F):.0f} {np.max(H):.0f} {np.max(G):.0f} {np.max(g):.2f}")
         position = np.unravel_index(np.argmax(g, axis=None), g.shape)
         dy, dx = position[0] - 15.5, position[1] - 15.5
         self.xc, self.yc = (self.xc + dx, self.yc + dy)
@@ -71,4 +73,5 @@ class Mosse:
         F = np.fft.fft2(f)
         self.A = self.eta * self.Kernel * np.conj(F) + (1 - self.eta) * self.A
         self.B = self.eta * F * np.conj(F) + (1 - self.eta) * self.B
+        # print(f"{np.max(F):.0f} {np.max(self.A):.0f} {np.max(self.B):.0f}")
         return (self.xc, self.yc)

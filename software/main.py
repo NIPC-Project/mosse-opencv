@@ -43,7 +43,7 @@ for i in range(2, frame_count + 1):
     with open(f"../vot2013-dataset/frames-graybin/{series_name}/{i}.bin", "rb") as f:
         frame = f.read()
     xc, yc = mosse.update(frame=np.array(list(frame)).reshape((240, 320)))
-    print(f"{i}\t({xc=}, {yc=})")
+    print(f"\n[{i}]\t({xc=}, {yc=})")
     result.append([int(xc), int(yc)])
 
     frame = cv2.imread(f"../vot2013-dataset/origin/{series_name}_frames/{i:08}.jpg")
