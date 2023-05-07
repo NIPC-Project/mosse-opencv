@@ -25,7 +25,7 @@ from mosse import Mosse
 mosse = Mosse()
 
 writer = cv2.VideoWriter(
-    f"rgbresult/{series_name}.mp4",
+    f"result/{series_name}.mp4",
     cv2.VideoWriter_fourcc("H", "2", "6", "4"),
     frame_rate,
     frame_size,
@@ -46,8 +46,18 @@ for i in range(2, frame_count + 1):
     print(f"{i}\t({xc=}, {yc=})")
     result.append([int(xc), int(yc)])
 
+    frame = cv2.imread(f"origin/{series_name}_frames/{i:08}.jpg")
+    frame_rectangle = cv2.rectangle(
+        img=frame,
+        pt1=(int(xc) - 16, int(yc) - 16),
+        pt2=(int(xc) + 16, int(yc) + 16),
+        color=(0, 0, 255),
+        thickness=1,
+    )
+    writer.write(frame_rectangle)
+
 # [quit]
 
 print(f"{result=}")
-with open(f"result-{series_name}.py", "w") as f:
+with open(f"result/{series_name}.py", "w") as f:
     f.write(f"result = {result}\n")
