@@ -1,6 +1,16 @@
 import numpy as np
 
-class Mosse():
+
+def GaussKernel(size: tuple[int, int], sigma: float) -> np.ndarray:
+    w, h = size
+    xs, ys = np.meshgrid(np.arange(w), np.arange(h))  # 根据w, h的值生成一个网格的x，y坐标
+    center_x, center_y = (w - 1) / 2, (h - 1) / 2
+    dist = ((xs - center_x) ** 2 + (ys - center_y) ** 2) / (sigma**2)
+    labels = np.exp(-0.5 * dist)
+    return labels
+
+
+class Mosse:
     def __init__(self) -> None:
         self.W = 320
         self.H = 240
@@ -8,14 +18,47 @@ class Mosse():
         self.h = 32
         self.eta = 0.125
         self.sigma = 2.0
-        self.Kernel = 
-        self.window = 
+        self.Kernel = np.fft.fft2(GaussKernel(size=(self.h, self.w), sigma=self.sigma))
+        self.window = np.hanning(self.h)[:, np.newaxis].dot(
+            np.hanning(self.w)[np.newaxis, :]
+        )
 
-        self.A = np.zeros((self.h,self.w), dtype=np.complex64)
-        self.B = np.zeros((self.h,self.w), dtype=np.float32)
+        self.A = np.zeros((self.h, self.w), dtype=np.complex64)
+        self.B = np.zeros((self.h, self.w), dtype=np.float32)
 
+        self.xc = 0.0
+        self.yc = 0.0
 
-    def init(self, xc0: float, yc0: float):
-        pass
-    def update(self):
-        pass
+    def init(self, frame: np.ndarray, xc0: float, yc0: float):
+        self.xc = xc0
+        self.yc = yc0
+
+        frame = frame / 256 - 0.5
+        f = frame[yc0 - 16 : yc0 + 16, xc0 - 16 : xc0 + 16] * self.window
+        F = np.fft.fft2(f)
+        self.A = self.Kernel * np.conj(F)
+        self.B = F * np.conj(F)
+
+    def update(self, frame: np.ndarray) -> tuple[float, float]:
+        frame = frame / 256 - 0.5
+
+        f = (
+            frame[self.yc - 16 : self.yc + 16, self.xc - 16 : self.xc + 16]
+            * self.window
+        )
+        F = np.fft.fft2(f)
+        H = self.A / self.B
+        G = F * H
+        g = np.real(np.fft.ifft2(G))
+        position = np.unravel_index(np.argmax(g, axis=None), g.shape)
+        dy, dx = position[0] - 15.5, position[1] - 15.5
+        self.xc, self.yc = (self.xc + dx, self.yc + dy)
+
+        f = (
+            frame[self.yc - 16 : self.yc + 16, self.xc - 16 : self.xc + 16]
+            * self.window
+        )
+        F = np.fft.fft2(f)
+        self.A = self.eta * self.Kernel * np.conj(F) + (1 - self.eta) * self.A
+        self.B = F * np.conj(F) + (1 - self.eta) * self.B
+        return (self.xc, self.yc)

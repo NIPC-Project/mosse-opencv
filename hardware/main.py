@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 series_name = "car"  # car, cup
 
@@ -34,14 +35,14 @@ writer = cv2.VideoWriter(
 
 with open(f"frames-graybin/{series_name}/1.bin", "rb") as f:
     frame_init = f.read()
-mosse.init()
+mosse.init(frame=np.array(list(frame_init)).reshape((240, 320)), xc0=xc, yc0=yc)
 
 # [update]
 
 for i in range(2, frame_count + 1):
     with open(f"frames-graybin/{series_name}/{i}.bin", "rb") as f:
         frame = f.read()
-    xc, yc = mosse.update()
+    xc, yc = mosse.update(frame=np.array(list(frame)).reshape((240, 320)))
     print(f"{i}\t({xc=}, {yc=})")
     result.append([int(xc), int(yc)])
 
