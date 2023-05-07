@@ -25,8 +25,8 @@ writer = cv2.VideoWriter(
 
 for i in range(1, frame_count + 1):
     frame = cv2.imread(f"../vot2013-dataset/origin/{series_name}_frames/{i:08}.jpg")
-    xc, yc = result[i - 1]
-    xc, yc = int(xc), int(yc)
+    xc2, yc2 = result[i - 1]
+    xc, yc = int(xc2 / 2), int(yc2 / 2)
     frame_rectangle = cv2.rectangle(
         img=frame,
         pt1=(xc - 16, yc - 16),
